@@ -1,0 +1,66 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "native-debug",
+      "displayName": "原生 Debug",
+      "description": "使用默认本机编译器构建 GisEngine 原生基线",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/out/build/native-debug-mingw",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "GISENGINE_BUILD_SAMPLES": "ON",
+        "GISENGINE_BUILD_TOOLS": "ON",
+        "GISENGINE_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "native-release",
+      "displayName": "原生 Release",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/out/build/native-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "GISENGINE_BUILD_SAMPLES": "ON",
+        "GISENGINE_BUILD_TOOLS": "ON",
+        "GISENGINE_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "web-debug",
+      "displayName": "WebAssembly Debug",
+      "inherits": "native-debug",
+      "binaryDir": "${sourceDir}/out/build/web-debug",
+      "description": "由 Emscripten 工具链文件覆盖编译器后复用同一目标边界",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "native-debug",
+      "configurePreset": "native-debug"
+    },
+    {
+      "name": "native-release",
+      "configurePreset": "native-release"
+    },
+    {
+      "name": "web-debug",
+      "configurePreset": "web-debug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "native-debug",
+      "configurePreset": "native-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
