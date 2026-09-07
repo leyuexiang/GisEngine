@@ -6,29 +6,29 @@
 
 ## 2. 高程数据模型
 
-```ts
-interface HeightField {
-  width: number;
-  height: number;
-  values: Float32Array;
-  noDataValue?: number;
-  min: number;
-  max: number;
-  verticalDatum: string;
-}
+```cpp
+struct HeightField {
+    uint32_t width;
+    uint32_t height;
+    std::vector<float> values;
+    std::optional<float> noDataValue;
+    float min;
+    float max;
+    std::string verticalDatum;
+};
 ```
 
 首版支持规则网格和 65×65 等常见采样尺寸；后续允许量化网格、压缩高程和不规则网格，通过 `HeightDecoder` 扩展。
 
 ## 3. TilePayload 扩展
 
-```ts
-interface TerrainTilePayload extends TilePayload {
-  height?: HeightField;
-  imagery?: DecodedImage;
-  geometricError: number;
-  borderSamples?: BorderSamples;
-}
+```cpp
+struct TerrainTilePayload : TilePayload {
+    std::optional<HeightField> height;
+    std::optional<DecodedImage> imagery;
+    double geometricError;
+    std::optional<BorderSamples> borderSamples;
+};
 ```
 
 影像与高程可以来自不同图层，必须通过同一 `TileKey`、空间参考和边界策略对齐；任一数据源缺失都要有独立降级。
@@ -37,10 +37,11 @@ interface TerrainTilePayload extends TilePayload {
 
 地形网格生成流程：读取采样 → 替换无数据值 → 计算地理位置 → 应用高程 → 计算局部包围体 → 填充 UV → 生成索引 → 计算法线/边缘修补。
 
-```ts
-interface TerrainMeshBuilder {
-  build(input: HeightField, frame: LocalFrame, bounds: GeoBounds): DecodedMesh;
-}
+```cpp
+class TerrainMeshBuilder {
+public:
+    DecodedMesh Build(const HeightField& input, const LocalFrame& frame, GeoBounds bounds);
+};
 ```
 
 规则网格作为稳定基线；量化网格和 GPU 顶点生成作为后续优化，不改变 `DecodedMesh` 输出契约。
@@ -51,7 +52,7 @@ interface TerrainMeshBuilder {
 
 ## 6. 法线策略
 
-- CPU 法线：Worker 中共享边界采样，适用于 WebGL2 和低端设备。
+- CPU 法线：C++ 任务线程中共享边界采样，适用于原生、WebGL2 和低端设备。
 - GPU 法线：Compute Shader 从高度纹理/网格计算，适用于 WebGPU 高能力等级。
 - 法线跨瓦片使用边缘样本，避免接缝处光照断裂。
 

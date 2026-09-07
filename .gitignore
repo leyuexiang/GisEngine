@@ -2,6 +2,9 @@
 node_modules/
 dist/
 build/
+out/
+cmake-build-*/
+compile_commands.json
 coverage/
 *.tsbuildinfo
 
@@ -19,6 +22,13 @@ coverage/
 # 编辑器与操作系统文件
 .idea/
 .vscode/
+.vs/
+*.user
+*.sln
+*.vcxproj*
+*.pdb
+*.dSYM/
+emscripten-cache/
 *.swp
 *.swo
 .DS_Store

@@ -1,94 +1,85 @@
-# 04 渲染与 WebGPU 设计
+# 04 跨平台渲染与 WebGPU 设计
 
 ## 1. 目标
 
-以 WebGPU 为主后端，提供可验证的 WebGL2 降级路径。渲染模块只消费 RenderSnapshot，不直接遍历业务对象。
+建立类似现代商业引擎的渲染硬件接口（RHI，Rendering Hardware Interface）和渲染图（RenderGraph）。Vulkan 作为首个原生验证后端，WebGPU 作为 Web 发布后端；Direct3D 12 和 Metal 按相同契约扩展，WebGL2 只提供受限兼容路径。
 
 ## 2. RHI 抽象
 
-RHI 暴露资源描述而不是具体 API 对象：
+RHI 暴露不可变资源描述、类型安全句柄和显式命令，不向上泄露具体 API 对象：
 
-```ts
-interface RenderDevice {
-  capabilities: DeviceCapabilities;
-  createBuffer(desc: BufferDesc): BufferHandle;
-  createTexture(desc: TextureDesc): TextureHandle;
-  createSampler(desc: SamplerDesc): SamplerHandle;
-  createPipeline(desc: PipelineDesc): PipelineHandle;
-  beginFrame(): FrameContext;
-  submit(frame: FrameContext): void;
-}
+```cpp
+class IRenderDevice {
+public:
+    virtual ~IRenderDevice() = default;
+    virtual const DeviceCapabilities& GetCapabilities() const = 0;
+    virtual BufferHandle CreateBuffer(const BufferDesc& desc) = 0;
+    virtual TextureHandle CreateTexture(const TextureDesc& desc) = 0;
+    virtual PipelineHandle CreatePipeline(const PipelineDesc& desc) = 0;
+    virtual FrameContext BeginFrame() = 0;
+    virtual void Submit(FrameContext&& frame) = 0;
+};
 ```
 
-句柄包含资源类型和 generation；设备丢失后所有句柄失效，由资源管理器重新上传。
+句柄包含类型、索引和代数（Generation）。资源销毁采用延迟队列，必须等待对应 GPU Fence 完成；设备丢失后由资源注册表按可恢复描述重建。
 
-## 3. WebGPU 初始化
+## 3. 后端路线
 
-初始化流程：请求 `GPUAdapter` → 评估 limits/features → 请求 `GPUDevice` → 配置 Canvas → 创建全局 Bind Group Layout → 注册 uncaptured error 和 device lost 处理。
+| 阶段 | 后端 | 定位 |
+|---|---|---|
+| R0 | Null RHI | 无 GPU 自动化测试、资源生命周期验证 |
+| R1 | Vulkan | 原生参考实现，验证显式同步和资源屏障 |
+| R2 | WebGPU | Emscripten Web 发行，映射浏览器能力模型 |
+| R3 | Direct3D 12 | Windows 高性能与图形调试工具链 |
+| R4 | Metal | macOS/iOS 原生发布 |
+| 兼容 | WebGL2 | 不支持 WebGPU 的浏览器，功能等级受限 |
 
-能力等级：
-
-| 等级 | 内容 |
-|---|---|
-| W0 | 基础渲染、深度、纹理、采样器 |
-| W1 | Storage Buffer、Indirect Draw、纹理压缩 |
-| W2 | Compute 裁剪、GPU 粒子、时间戳查询 |
-
-缺失能力必须有替代路径，而不是在运行时崩溃。
+WebGPU 可同时通过 Dawn/wgpu-native 在原生测试，但不能代替 Vulkan/D3D12 的原生能力验证。
 
 ## 4. RenderGraph
 
-RenderGraph 描述资源读写和 Pass 依赖，编译后生成 WebGPU CommandEncoder；同一图结构缓存编译结果，窗口尺寸变化时只重建受影响资源。
-
-首版 Pass：
+RenderGraph 描述 Pass、逻辑资源及读写依赖，编译阶段完成拓扑排序、资源别名、屏障和队列同步，后端只负责翻译命令。
 
 ```text
-Shadow → DepthPrepass → OpaquePBR → Transparent → Sky → PostProcess → UI
+Shadow → DepthPrepass → GBuffer/Forward → Lighting → Transparent → PostProcess → UI
 ```
 
-后续可插入 SSR、SSAO、体积雾和 Compute 后处理，而不改变应用层调用方式。
+渲染路径允许 Forward+、Deferred 和移动/Web 精简 Forward 三种模板。后续 SSR、SSAO、虚拟阴影、体积雾和 Compute Pass 通过功能节点加入，不改变游戏线程接口。
 
-## 5. 数据布局
+## 5. Shader 与材质
 
-统一使用 16 字节对齐的 Uniform/Storage 数据。每帧、材质、对象三类绑定组约定如下：
+首个垂直切片允许核心 Shader 同时维护 HLSL/GLSL/WGSL 小型变体，以尽快验证后端。随后建立材质中间表示（Material IR）、离线编译、反射和稳定绑定布局，生成各后端目标：
 
-| Group | 内容 |
+- Direct3D 12：DXIL。
+- Vulkan：SPIR-V。
+- Metal：MSL/Metallib。
+- WebGPU：WGSL。
+- WebGL2：GLSL ES 3.0。
+
+不能在确定编译器链和语义一致性前承诺“一份 Shader 自动覆盖所有后端”。Shader 工具链必须有跨后端截图测试、反射一致性测试和缓存版本号。
+
+## 6. 线程模型
+
+游戏线程生成只读 `RenderSnapshot`；渲染线程执行裁剪、排序、RenderGraph 编译和命令编码；RHI 队列提交 GPU。Web 单线程模式把游戏/渲染阶段串行执行，多线程 Web 模式再映射到 Emscripten Pthreads，不能改变上层数据契约。
+
+## 7. 精度与性能
+
+CPU 世界坐标使用双精度，渲染快照使用相机相对单精度或高低位拆分。持久化上传环、描述符/Bind Group 缓存、Pipeline Cache、实例化和间接绘制均位于 RHI 之上，以便后端选择等价能力或降级。
+
+## 8. Web 能力等级
+
+| 等级 | 内容 |
 |---|---|
-| 0 | 相机矩阵、时间、环境光、视口 |
-| 1 | 材质参数、纹理和采样器 |
-| 2 | 模型矩阵、对象 ID、实例数据 |
+| W0 | WebGL2、CPU 裁剪、基础 PBR、传统深度 |
+| W1 | WebGPU 基础渲染、Storage Buffer、压缩纹理 |
+| W2 | Compute 裁剪、间接绘制、GPU 粒子、时间戳查询 |
 
-对象数据优先放 Storage Buffer，使用动态偏移或对象索引，减少 Bind Group 创建。
+构建系统按等级裁剪资源和 Shader 变体。缺失能力必须在加载阶段给出诊断，不能运行到某个 Pass 才崩溃。
 
-## 6. Shader 与材质
+## 9. 验收标准
 
-WGSL 是 WebGPU 主语言；WebGL2 维护等价 GLSL 变体。材质由固定 PBR 参数加可选扩展组成，着色器变体通过稳定哈希缓存。
-
-基础材质参数：基础颜色、金属度、粗糙度、法线、遮挡、自发光、透明模式和双面模式。
-
-## 7. 裁剪、排序和绘制
-
-第一版 CPU 视锥裁剪 + 材质排序；第二版增加 GPU Compute 裁剪和间接绘制。所有物体都提供包围盒/包围球，透明物体按深度排序。
-
-性能目标：减少每帧对象分配，持久化动态 Buffer，合并相同管线和材质的绘制。
-
-## 8. 坐标与精度
-
-CPU 世界坐标可用双精度；GPU 使用相机附近的局部单精度坐标。大世界采用原点重定位，重定位事件必须同步物理、粒子、音频和脚本。
-
-地球级渲染的椭球、ECEF、ENU、反向 Z 和对数深度策略见 [14-地球椭球与空间参考设计](./14-地球椭球与空间参考设计.md) 与 [18-精度深度与可视化质量设计](./18-精度深度与可视化质量设计.md)。
-
-## 9. 降级策略
-
-- WebGPU 不可用：切换 WebGL2。
-- 无压缩纹理：使用 PNG/JPEG 或未压缩 RGBA8。
-- 无 Compute：使用 CPU 裁剪和粒子。
-- 无时间戳查询：使用 CPU 帧耗时近似。
-
-## 10. 验收标准
-
-- WebGPU 和 WebGL2 渲染同一测试场景。
-- 设备丢失后能提示并恢复资源。
-- RenderGraph 无未声明的资源读写冲突。
-- 帧内 GPU 资源创建数量接近零。
-- 低端设备能自动降低分辨率、阴影和后处理等级。
+- Null RHI 能验证资源、屏障和 RenderGraph 契约。
+- Vulkan 与 WebGPU 渲染相同黄金场景，允许明确记录的平台色彩误差。
+- 设备丢失、窗口重建和 Web Canvas 重配置可恢复。
+- 正常帧内不创建长期 GPU 资源，不发生未声明资源冲突。
+- WebGL2 包不会包含 Compute、间接绘制等不可用变体。
