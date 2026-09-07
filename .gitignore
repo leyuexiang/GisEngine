@@ -1,0 +1,31 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# 本地缓存与运行时数据
+.cache/
+.parcel-cache/
+.vite/
+*.log
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 编辑器与操作系统文件
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 测试与临时输出
+test-results/
+playwright-report/
+tmp/
+temp/
