@@ -32,6 +32,40 @@
       }
     },
     {
+      "name": "native-sanitize",
+      "displayName": "原生 Sanitizer Debug",
+      "inherits": "native-debug",
+      "binaryDir": "${sourceDir}/out/build/native-sanitize-mingw",
+      "description": "使用 AddressSanitizer 和 UndefinedBehaviorSanitizer 检查内存与未定义行为",
+      "cacheVariables": {
+        "GISENGINE_ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "vs-ninja-debug",
+      "displayName": "Visual Studio 2026 Debug",
+      "description": "在 VS 2026 x64 开发者环境中使用 Ninja 和 MSVC 构建",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/vs-ninja-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "cl",
+        "GISENGINE_BUILD_SAMPLES": "ON",
+        "GISENGINE_BUILD_TOOLS": "ON",
+        "GISENGINE_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "vs-ninja-sanitize",
+      "displayName": "Visual Studio 2026 AddressSanitizer",
+      "inherits": "vs-ninja-debug",
+      "binaryDir": "${sourceDir}/out/build/vs-ninja-sanitize",
+      "description": "在 VS 2026 x64 开发者环境中启用 AddressSanitizer",
+      "cacheVariables": {
+        "GISENGINE_ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
       "name": "web-debug",
       "displayName": "WebAssembly Debug",
       "inherits": "native-debug",
@@ -50,6 +84,18 @@
       "configurePreset": "native-release"
     },
     {
+      "name": "native-sanitize",
+      "configurePreset": "native-sanitize"
+    },
+    {
+      "name": "vs-ninja-debug",
+      "configurePreset": "vs-ninja-debug"
+    },
+    {
+      "name": "vs-ninja-sanitize",
+      "configurePreset": "vs-ninja-sanitize"
+    },
+    {
       "name": "web-debug",
       "configurePreset": "web-debug"
     }
@@ -58,6 +104,27 @@
     {
       "name": "native-debug",
       "configurePreset": "native-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "native-sanitize",
+      "configurePreset": "native-sanitize",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "vs-ninja-debug",
+      "configurePreset": "vs-ninja-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "vs-ninja-sanitize",
+      "configurePreset": "vs-ninja-sanitize",
       "output": {
         "outputOnFailure": true
       }

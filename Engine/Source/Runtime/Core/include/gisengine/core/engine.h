@@ -18,7 +18,7 @@ enum class EngineState : std::uint8_t {
 };
 
 class Engine final {
-public:
+   public:
     explicit Engine(EngineConfig config);
     ~Engine() = default;
 
@@ -34,9 +34,9 @@ public:
     void start();
     void stop() noexcept;
 
-private:
+   private:
     EngineConfig config_;
     EngineState state_{EngineState::created};
 };
 
-} // namespace gisengine::core
+}  // namespace gisengine::core

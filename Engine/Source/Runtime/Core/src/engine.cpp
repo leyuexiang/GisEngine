@@ -5,8 +5,7 @@
 
 namespace gisengine::core {
 
-Engine::Engine(EngineConfig config)
-    : config_(std::move(config)) {
+Engine::Engine(EngineConfig config) : config_(std::move(config)) {
     if (config_.project_name.empty()) {
         throw std::invalid_argument("项目名称不能为空");
     }
@@ -38,4 +37,4 @@ void Engine::stop() noexcept {
     state_ = EngineState::stopped;
 }
 
-} // namespace gisengine::core
+}  // namespace gisengine::core

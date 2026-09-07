@@ -1,6 +1,6 @@
-#include "gisengine/core/engine.h"
-
 #include <iostream>
+
+#include "gisengine/core/engine.h"
 
 int main(int argc, char* argv[]) {
     std::cout << "AssetCooker 基线\n";

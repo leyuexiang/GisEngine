@@ -1,6 +1,6 @@
-#include "gisengine/runtime/runtime.h"
-
 #include <iostream>
+
+#include "gisengine/runtime/runtime.h"
 
 int main() {
     gisengine::runtime::RuntimeHost host{

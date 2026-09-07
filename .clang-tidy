@@ -1,0 +1,14 @@
+---
+Checks: >
+  bugprone-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -bugprone-easily-swappable-parameters,
+  -performance-avoid-endl
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^.*/(Engine|Samples|Tests|Tools)/.*'
+FormatStyle: file
+...

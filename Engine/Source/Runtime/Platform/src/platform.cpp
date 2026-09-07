@@ -32,4 +32,4 @@ PlatformInfo query_platform_info() {
     return info;
 }
 
-} // namespace gisengine::platform
+}  // namespace gisengine::platform

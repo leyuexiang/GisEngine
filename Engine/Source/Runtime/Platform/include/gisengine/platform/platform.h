@@ -12,4 +12,4 @@ struct PlatformInfo {
 
 [[nodiscard]] PlatformInfo query_platform_info();
 
-} // namespace gisengine::platform
+}  // namespace gisengine::platform

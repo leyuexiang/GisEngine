@@ -4,9 +4,7 @@
 
 namespace gisengine::runtime {
 
-RuntimeHost::RuntimeHost(core::EngineConfig config)
-    : engine_(std::move(config)) {
-}
+RuntimeHost::RuntimeHost(core::EngineConfig config) : engine_(std::move(config)) {}
 
 RuntimeHost::~RuntimeHost() {
     shutdown();
@@ -31,4 +29,4 @@ const platform::PlatformInfo& RuntimeHost::platform_info() const noexcept {
     return platform_info_;
 }
 
-} // namespace gisengine::runtime
+}  // namespace gisengine::runtime

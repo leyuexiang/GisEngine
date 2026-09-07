@@ -6,7 +6,7 @@
 namespace gisengine::runtime {
 
 class RuntimeHost final {
-public:
+   public:
     explicit RuntimeHost(core::EngineConfig config);
     ~RuntimeHost();
 
@@ -19,9 +19,9 @@ public:
     [[nodiscard]] core::Engine& engine() noexcept;
     [[nodiscard]] const platform::PlatformInfo& platform_info() const noexcept;
 
-private:
+   private:
     core::Engine engine_;
     platform::PlatformInfo platform_info_;
 };
 
-} // namespace gisengine::runtime
+}  // namespace gisengine::runtime
