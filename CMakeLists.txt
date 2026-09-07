@@ -69,6 +69,7 @@ target_link_libraries(GisEngineCore PUBLIC GisEngine::Math)
 
 add_library(GisEngineRhi STATIC
     Engine/Source/Runtime/Rhi/src/rhi.cpp
+    Engine/Source/Runtime/Rhi/src/vulkan.cpp
 )
 add_library(GisEngine::Rhi ALIAS GisEngineRhi)
 target_include_directories(GisEngineRhi
@@ -77,6 +78,9 @@ target_include_directories(GisEngineRhi
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(GisEngineRhi PUBLIC GisEngine::Core)
+if(CMAKE_DL_LIBS)
+    target_link_libraries(GisEngineRhi PRIVATE ${CMAKE_DL_LIBS})
+endif()
 
 add_library(GisEnginePlatform STATIC
     Engine/Source/Runtime/Platform/src/platform.cpp
@@ -188,6 +192,7 @@ if(GISENGINE_BUILD_TESTS)
             Tests/MathTests.cpp
             Tests/SceneTests.cpp
             Tests/RhiTests.cpp
+            Tests/VulkanTests.cpp
         )
         target_link_libraries(GisEngineUnitTests PRIVATE GisEngine::Runtime GisEngine::Scene GisEngine::Rhi GTest::gtest_main)
         gisengine_configure_target(GisEngineUnitTests)
