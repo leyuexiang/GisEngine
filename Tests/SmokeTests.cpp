@@ -30,6 +30,8 @@ struct TestVelocity {
 
 }  // namespace
 
+// 冒烟测试按退出码定位失败步骤，并串联验证跨模块契约，控制流复杂度不反映生产代码复杂度。
+// NOLINTNEXTLINE(bugprone-exception-escape,readability-function-cognitive-complexity)
 int main() {
     gisengine::runtime::RuntimeHost host{
         gisengine::core::EngineConfig{.project_name = "SmokeTest", .fixed_update_hz = 60U}};
@@ -145,7 +147,8 @@ int main() {
         GISENGINE_ENSURE(false, "冒烟测试契约");
         std::cerr << "断言未抛出错误\n";
         return 17;
-    } catch (const gisengine::core::AssertionError&) {
+    } catch (const gisengine::core::AssertionError& expected_error) {
+        static_cast<void>(expected_error);
     }
 
     gisengine::ecs::World world;
@@ -167,7 +170,8 @@ int main() {
         world.emplace<TestPosition>(second_world_entity, 6);
         std::cerr << "已销毁实体仍可添加组件\n";
         return 19;
-    } catch (const gisengine::core::AssertionError&) {
+    } catch (const gisengine::core::AssertionError& expected_error) {
+        static_cast<void>(expected_error);
     }
 
     gisengine::scene::Scene scene;
@@ -176,6 +180,8 @@ int main() {
     scene.try_get_transform(root_scene_entity)->local_position = {.x = 1.0F, .y = 0.0F, .z = 0.0F};
     scene.try_get_transform(child_scene_entity)->local_position = {.x = 0.0F, .y = 2.0F, .z = 0.0F};
     if (!scene.set_parent(child_scene_entity, root_scene_entity) ||
+        // 这里刻意反转父子关系以验证环检测，参数顺序仍符合 set_parent(child, parent)。
+        // NOLINTNEXTLINE(readability-suspicious-call-argument)
         scene.set_parent(root_scene_entity, child_scene_entity)) {
         std::cerr << "Transform 层级循环校验错误\n";
         return 20;

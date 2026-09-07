@@ -2,6 +2,8 @@
 
 #include "gisengine/core/engine.h"
 
+// 命令行进程以退出码报告状态；流输出的理论异常不属于可恢复业务错误。
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argv[]) {
     std::cout << "AssetCooker 基线\n";
     if (argc < 2) {

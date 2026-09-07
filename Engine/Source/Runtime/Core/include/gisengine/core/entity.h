@@ -17,7 +17,7 @@ struct EntityHandle {
 class EntityPool final {
    public:
     [[nodiscard]] EntityHandle create();
-    [[nodiscard]] bool destroy(EntityHandle entity) noexcept;
+    [[nodiscard]] bool destroy(EntityHandle entity);
     [[nodiscard]] bool is_alive(EntityHandle entity) const noexcept;
     [[nodiscard]] std::size_t alive_count() const noexcept;
 

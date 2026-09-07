@@ -28,9 +28,9 @@ GisEngine 是一套类似 Unreal Engine 5 的原生优先（Native-first）3D �
 
 - 阶段：M00 工程基线、M01 数学与实体句柄首版、`T-RHI-001/002` 的 Null RHI 已完成；M09～M14 第二季扩展规划与原生核心路线已在 ADR-001 固化
 - 代码：已建立格式、静态检查、警告门禁、Sanitizer 构建入口，以及数学、实体句柄、ECS、Transform 场景层级、日志/事件/内存统计和 Null RHI
-- 测试：GoogleTest 1.17.0 固定源码已随仓库提供，覆盖核心、实体、ECS、数学、场景和 RHI；MinGW Debug 冒烟测试已通过，完整单元测试与 Sanitizer 将在 VS 2026 下继续验证
+- 测试：GoogleTest 1.17.0 固定源码已随仓库提供，覆盖核心、实体、ECS、数学、场景和 RHI；VS 2026 Debug 与 AddressSanitizer 的 20 项 CTest 均已通过，MinGW Debug 冒烟测试已通过
 - 文档：架构、模块、里程碑、任务分解、原生/Web 发布边界、质量配置和 M01/M02 实施记录已建立
-- 下一步：完成 VS 2026 下的完整质量验证，再接入 Vulkan 最小垂直切片
+- 下一步：接入 Vulkan 最小垂直切片
 
 ## 设计约束
 

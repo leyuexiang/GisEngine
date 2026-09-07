@@ -41,6 +41,8 @@ TEST(EngineTest, RejectsRestartAfterShutdown) {
     EXPECT_THROW(engine.start(), std::logic_error);
 }
 
+// GoogleTest 断言宏展开为多层控制流；业务测试步骤本身保持线性。
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST(CoreServicesTest, DeliversLogRecordsAndFailsContracts) {
     std::vector<core::LogRecord> records;
     core::Logger logger{[&records](const core::LogRecord& record) { records.push_back(record); }};

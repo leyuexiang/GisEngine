@@ -77,19 +77,19 @@ PipelineHandle NullRenderDevice::create_pipeline(const PipelineDesc& desc) {
     return pipelines_.create(desc);
 }
 
-bool NullRenderDevice::destroy(BufferHandle handle) noexcept {
+bool NullRenderDevice::destroy(BufferHandle handle) {
     return buffers_.destroy(handle);
 }
 
-bool NullRenderDevice::destroy(TextureHandle handle) noexcept {
+bool NullRenderDevice::destroy(TextureHandle handle) {
     return textures_.destroy(handle);
 }
 
-bool NullRenderDevice::destroy(SamplerHandle handle) noexcept {
+bool NullRenderDevice::destroy(SamplerHandle handle) {
     return samplers_.destroy(handle);
 }
 
-bool NullRenderDevice::destroy(PipelineHandle handle) noexcept {
+bool NullRenderDevice::destroy(PipelineHandle handle) {
     return pipelines_.destroy(handle);
 }
 

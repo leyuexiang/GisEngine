@@ -171,10 +171,10 @@ class IRenderDevice {
     [[nodiscard]] virtual TextureHandle create_texture(const TextureDesc& desc) = 0;
     [[nodiscard]] virtual SamplerHandle create_sampler(const SamplerDesc& desc) = 0;
     [[nodiscard]] virtual PipelineHandle create_pipeline(const PipelineDesc& desc) = 0;
-    virtual bool destroy(BufferHandle handle) noexcept = 0;
-    virtual bool destroy(TextureHandle handle) noexcept = 0;
-    virtual bool destroy(SamplerHandle handle) noexcept = 0;
-    virtual bool destroy(PipelineHandle handle) noexcept = 0;
+    virtual bool destroy(BufferHandle handle) = 0;
+    virtual bool destroy(TextureHandle handle) = 0;
+    virtual bool destroy(SamplerHandle handle) = 0;
+    virtual bool destroy(PipelineHandle handle) = 0;
     [[nodiscard]] virtual FrameContext begin_frame() = 0;
     virtual void transition(FrameContext& frame, BufferHandle handle, ResourceState before, ResourceState after) = 0;
     virtual void transition(FrameContext& frame, TextureHandle handle, ResourceState before, ResourceState after) = 0;
@@ -208,7 +208,7 @@ class ResourcePool final {
         return {.index = index, .generation = slots_[index].generation};
     }
 
-    [[nodiscard]] bool destroy(Handle handle) noexcept {
+    [[nodiscard]] bool destroy(Handle handle) {
         if (!valid(handle)) {
             return false;
         }
@@ -286,10 +286,10 @@ class NullRenderDevice final : public IRenderDevice {
     [[nodiscard]] TextureHandle create_texture(const TextureDesc& desc) override;
     [[nodiscard]] SamplerHandle create_sampler(const SamplerDesc& desc) override;
     [[nodiscard]] PipelineHandle create_pipeline(const PipelineDesc& desc) override;
-    bool destroy(BufferHandle handle) noexcept override;
-    bool destroy(TextureHandle handle) noexcept override;
-    bool destroy(SamplerHandle handle) noexcept override;
-    bool destroy(PipelineHandle handle) noexcept override;
+    bool destroy(BufferHandle handle) override;
+    bool destroy(TextureHandle handle) override;
+    bool destroy(SamplerHandle handle) override;
+    bool destroy(PipelineHandle handle) override;
     [[nodiscard]] FrameContext begin_frame() override;
     void transition(FrameContext& frame, BufferHandle handle, ResourceState before, ResourceState after) override;
     void transition(FrameContext& frame, TextureHandle handle, ResourceState before, ResourceState after) override;

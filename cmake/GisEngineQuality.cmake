@@ -37,7 +37,8 @@ function(gisengine_enable_warnings target_name)
     endif()
 
     if(MSVC)
-        set(warning_options /W4 /permissive-)
+        # 项目源码统一使用 UTF-8；显式指定源文件与执行字符集，避免中文注释在系统代码页下触发 C4819 并造成误解析。
+        set(warning_options /W4 /permissive- /utf-8)
         if(GISENGINE_WARNINGS_AS_ERRORS)
             list(APPEND warning_options /WX)
         endif()

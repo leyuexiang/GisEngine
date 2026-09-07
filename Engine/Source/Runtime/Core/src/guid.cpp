@@ -1,5 +1,6 @@
 #include "gisengine/core/guid.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <random>
 
@@ -29,12 +30,7 @@ Guid Guid::generate() {
 }
 
 bool Guid::valid() const noexcept {
-    for (const std::uint8_t byte : bytes_) {
-        if (byte != 0U) {
-            return true;
-        }
-    }
-    return false;
+    return std::ranges::any_of(bytes_, [](const std::uint8_t byte) { return byte != 0U; });
 }
 
 std::string Guid::to_string() const {

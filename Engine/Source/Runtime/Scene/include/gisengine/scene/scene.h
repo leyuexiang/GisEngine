@@ -33,7 +33,7 @@ class Scene final {
         return entity;
     }
 
-    [[nodiscard]] bool destroy_entity(core::EntityHandle entity) noexcept {
+    [[nodiscard]] bool destroy_entity(core::EntityHandle entity) {
         Transform* transform = world_.try_get<Transform>(entity);
         if (transform == nullptr) {
             return world_.destroy_entity(entity);

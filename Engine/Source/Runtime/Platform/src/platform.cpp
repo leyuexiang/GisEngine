@@ -9,7 +9,7 @@ PlatformInfo query_platform_info() {
         .web_build = false,
     };
 
-#if defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
     info.operating_system = "WebAssembly";
     info.compiler = "Emscripten";
     info.web_build = true;
@@ -21,7 +21,7 @@ PlatformInfo query_platform_info() {
     info.operating_system = "Linux";
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
     info.compiler = "MSVC";
 #elif defined(__clang__)
     info.compiler = "Clang";

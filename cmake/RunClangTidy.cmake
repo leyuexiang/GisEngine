@@ -17,7 +17,8 @@ file(GLOB_RECURSE TIDY_SOURCES
 )
 
 execute_process(
-    COMMAND "${CLANG_TIDY_EXECUTABLE}" --p="${BUILD_DIRECTORY}" ${TIDY_SOURCES}
+    # CMake 会按参数边界传递命令；不要在 --p 的值中嵌入引号，否则 clang-tidy 会把引号视为路径内容。
+    COMMAND "${CLANG_TIDY_EXECUTABLE}" "--p=${BUILD_DIRECTORY}" ${TIDY_SOURCES}
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     COMMAND_ERROR_IS_FATAL ANY
 )

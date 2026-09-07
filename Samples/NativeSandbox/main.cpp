@@ -3,6 +3,8 @@
 
 #include "gisengine/runtime/runtime.h"
 
+// 进程入口已经将引擎初始化失败转换为退出码；流输出的理论异常不属于可恢复业务错误。
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main() {
     try {
         gisengine::runtime::RuntimeHost host{

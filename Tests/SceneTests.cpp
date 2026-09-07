@@ -14,6 +14,8 @@ TEST(SceneTest, UpdatesNestedWorldTransformsIteratively) {
     scene.try_get_transform(child)->local_position = {.x = 0.0F, .y = 2.0F, .z = 0.0F};
     scene.try_get_transform(grandchild)->local_position = {.x = 0.0F, .y = 0.0F, .z = 3.0F};
     ASSERT_TRUE(scene.set_parent(child, root));
+    // 参数顺序与 set_parent(child, parent) 的契约一致，名称相近不代表可交换。
+    // NOLINTNEXTLINE(readability-suspicious-call-argument)
     ASSERT_TRUE(scene.set_parent(grandchild, child));
 
     scene.update_transforms();
@@ -28,6 +30,8 @@ TEST(SceneTest, PreventsCyclesAndDetachesChildrenOnDestruction) {
     const core::EntityHandle child = scene.create_entity();
     ASSERT_TRUE(scene.set_parent(child, root));
 
+    // 这里刻意传入反向层级以验证环检测，参数顺序仍符合 set_parent(child, parent)。
+    // NOLINTNEXTLINE(readability-suspicious-call-argument)
     EXPECT_FALSE(scene.set_parent(root, child));
     ASSERT_TRUE(scene.destroy_entity(root));
     EXPECT_FALSE(scene.world().is_alive(root));

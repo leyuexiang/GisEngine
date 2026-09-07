@@ -24,7 +24,7 @@ EntityHandle EntityPool::create() {
     return {.index = index, .generation = generations_[index]};
 }
 
-bool EntityPool::destroy(EntityHandle entity) noexcept {
+bool EntityPool::destroy(EntityHandle entity) {
     if (!is_alive(entity)) {
         return false;
     }

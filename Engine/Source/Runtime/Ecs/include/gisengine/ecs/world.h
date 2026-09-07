@@ -117,7 +117,7 @@ class World final {
    public:
     [[nodiscard]] core::EntityHandle create_entity() { return entities_.create(); }
 
-    [[nodiscard]] bool destroy_entity(core::EntityHandle entity) noexcept {
+    [[nodiscard]] bool destroy_entity(core::EntityHandle entity) {
         if (!entities_.is_alive(entity)) {
             return false;
         }
