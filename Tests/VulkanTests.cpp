@@ -41,4 +41,40 @@ TEST(VulkanInstanceTest, MovedInstanceKeepsCapabilities) {
     EXPECT_TRUE(moved.capabilities().available);
 }
 
+TEST(VulkanDeviceTest, CreatesLogicalDeviceWithGraphicsQueue) {
+    const auto instance = rhi::VulkanInstance::try_create();
+    if (!instance.has_value()) {
+        GTEST_SKIP() << "当前环境没有可创建的 Vulkan 实例或物理设备";
+    }
+
+    const auto device = rhi::VulkanDevice::try_create(*instance);
+    if (!device.has_value()) {
+        GTEST_SKIP() << "当前环境没有支持图形队列的 Vulkan 物理设备";
+    }
+
+    const auto& capabilities = device->capabilities();
+    EXPECT_TRUE(capabilities.available);
+    EXPECT_FALSE(capabilities.physical_device.name.empty());
+    EXPECT_TRUE(capabilities.graphics_queue.available);
+}
+
+TEST(VulkanDeviceTest, KeepsInstanceAliveAfterCallerReleasesIt) {
+    auto instance = rhi::VulkanInstance::try_create();
+    if (!instance.has_value()) {
+        GTEST_SKIP() << "当前环境没有可创建的 Vulkan 实例或物理设备";
+    }
+
+    auto device = rhi::VulkanDevice::try_create(*instance);
+    if (!device.has_value()) {
+        GTEST_SKIP() << "当前环境没有支持图形队列的 Vulkan 物理设备";
+    }
+
+    const auto graphics_family = device->capabilities().graphics_queue.family_index;
+    instance.reset();
+    auto moved_device = std::move(*device);
+    EXPECT_TRUE(moved_device.capabilities().available);
+    EXPECT_TRUE(moved_device.capabilities().graphics_queue.available);
+    EXPECT_EQ(moved_device.capabilities().graphics_queue.family_index, graphics_family);
+}
+
 }  // namespace gisengine::tests

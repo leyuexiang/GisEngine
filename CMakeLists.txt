@@ -15,6 +15,7 @@ option(GISENGINE_ENABLE_CLANG_TIDY "在编译时执行 clang-tidy 静态检查" 
 option(GISENGINE_ENABLE_SANITIZERS "启用地址与未定义行为 Sanitizer" OFF)
 option(GISENGINE_USE_SYSTEM_GTEST "使用已安装的 GoogleTest 构建单元测试" OFF)
 option(GISENGINE_FETCH_GOOGLETEST "下载固定版本 GoogleTest 源码构建单元测试" ON)
+option(GISENGINE_FETCH_VULKAN_HEADERS "下载固定版本 Vulkan-Headers 以编译原生 Vulkan 后端" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,6 +24,28 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
 include(cmake/GisEngineQuality.cmake)
+
+if(NOT GISENGINE_FETCH_VULKAN_HEADERS)
+    message(FATAL_ERROR "Vulkan 后端需要固定版本的 Vulkan-Headers。")
+endif()
+
+include(FetchContent)
+# 固定 Vulkan-Headers 提交，避免本机 SDK 版本差异影响 Vulkan ABI 与跨平台构建。
+set(VULKAN_HEADERS_ENABLE_TESTS OFF CACHE BOOL "不构建 Vulkan-Headers 自身测试" FORCE)
+set(VULKAN_HEADERS_ENABLE_INSTALL OFF CACHE BOOL "不安装第三方 Vulkan-Headers" FORCE)
+FetchContent_Declare(
+    vulkan_headers
+    GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+    # v1.4.362 的发布提交为 ee2ec5fd83dafce291024683b50dc89219333076。
+    GIT_TAG v1.4.362
+    GIT_SHALLOW TRUE
+)
+if(EXISTS "${PROJECT_SOURCE_DIR}/ThirdParty/vulkan-headers/CMakeLists.txt")
+    # 本地已缓存固定提交时完全离线构建，CI 或新环境再回退到官方仓库。
+    set(FETCHCONTENT_SOURCE_DIR_VULKAN_HEADERS "${PROJECT_SOURCE_DIR}/ThirdParty/vulkan-headers" CACHE PATH
+        "Vulkan-Headers 本地源码目录" FORCE)
+endif()
+FetchContent_MakeAvailable(vulkan_headers)
 
 add_library(GisEngineMath INTERFACE)
 add_library(GisEngine::Math ALIAS GisEngineMath)
@@ -77,7 +100,10 @@ target_include_directories(GisEngineRhi
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Engine/Source/Runtime/Rhi/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(GisEngineRhi PUBLIC GisEngine::Core)
+target_link_libraries(GisEngineRhi
+    PUBLIC GisEngine::Core
+    PRIVATE "$<BUILD_INTERFACE:Vulkan::Headers>"
+)
 if(CMAKE_DL_LIBS)
     target_link_libraries(GisEngineRhi PRIVATE ${CMAKE_DL_LIBS})
 endif()
@@ -154,7 +180,6 @@ if(GISENGINE_BUILD_TESTS)
     if(GISENGINE_USE_SYSTEM_GTEST)
         find_package(GTest CONFIG REQUIRED)
     elseif(GISENGINE_FETCH_GOOGLETEST)
-        include(FetchContent)
         # 固定提交对应 GoogleTest 1.17.0，保证 MinGW、MSVC 和 CI 各自从源码构建匹配 ABI 的测试库。
         set(INSTALL_GTEST OFF CACHE BOOL "不安装测试框架" FORCE)
         set(gtest_force_shared_crt ON CACHE BOOL "GoogleTest 与 MSVC 共享运行库" FORCE)
