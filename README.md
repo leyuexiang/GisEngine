@@ -28,9 +28,9 @@ GisEngine 是一套类似 Unreal Engine 5 的原生优先（Native-first）3D �
 
 - 阶段：M00 工程基线、M01 数学与实体句柄首版、`T-RHI-001/002` 的 Null RHI 已完成；M09～M14 第二季扩展规划与原生核心路线已在 ADR-001 固化
 - 代码：已建立格式、静态检查、警告门禁、Sanitizer 构建入口，以及数学、实体句柄、ECS、Transform 场景层级、日志/事件/内存统计和 Null RHI
-- 测试：GoogleTest 1.17.0 固定源码已随仓库提供，覆盖核心、实体、ECS、数学、场景、RHI 与 Vulkan 探测；VS 2026 Debug 与 AddressSanitizer 的 24 项 CTest 均已通过，MinGW Debug 冒烟测试已通过
+- 测试：GoogleTest 1.17.0 固定源码已随仓库提供，覆盖核心、实体、ECS、数学、场景、RHI、渲染快照（Render Snapshot）、渲染图（Render Graph）与 Vulkan 探测、窗口表面、呈现队列、交换链、图像视图、窗口事件、命令池、帧同步、清屏及彩色三角形呈现；VS 2026 Debug 与 AddressSanitizer 的 40 项 CTest 均已通过
 - 文档：架构、模块、里程碑、任务分解、原生/Web 发布边界、质量配置和 M01/M02 实施记录已建立
-- 当前推进：Vulkan 逻辑设备与队列选择已完成（含固定 Vulkan-Headers 依赖）；下一步接入窗口表面与交换链
+- 当前推进：Vulkan 逻辑设备、Windows 可见窗口表面、呈现队列、交换链、图像视图、基础事件循环、图形命令池、帧同步对象、固定版本 shaderc/glslc 着色器编译链、彩色三角形图形管线、窗口缩放后的交换链重建，以及渲染快照（Render Snapshot）与渲染图（Render Graph）首版契约均已完成；下一步扩展深度缓冲、顶点/索引缓冲和资源绑定
 
 ## 设计约束
 
